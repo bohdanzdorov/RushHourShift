@@ -8,6 +8,11 @@ class Vehicle:
         return self.__id
     def getPositions(self):
         return self.__positions
+    def getOrientation(self):
+        return self.__orientation
+
+    def getLength(self):
+        return self.__length
 
     def slide(self, map, direction=1):
         empty_blocks=self.getAvailableEmptyBlocks(map, direction)
