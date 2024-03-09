@@ -3,7 +3,11 @@ class Vehicle:
         self.__id=id
         self.__length=length
         self.__orientation=orientation
+        # Orientation represents the placement posture of the vehicle on the chessboard.
+        # This value has only two states: "H" or "V"
         self.__positions = positions
+    #     Positions store the coordinates of the blocks occupied by the vehicle.
+
     def getId(self):
         return self.__id
     def getPositions(self):
@@ -14,7 +18,9 @@ class Vehicle:
     def getLength(self):
         return self.__length
 
-    def slide(self, map, direction=1):
+    def slide(self, map, direction):
+        # Direction means the direction of movement selected for the vehicle.
+        # There are only two values, -1 for upwards or 1 for downwards.
         empty_blocks=self.getAvailableEmptyBlocks(map, direction)
         if empty_blocks>0:
             dx= 0
@@ -27,7 +33,7 @@ class Vehicle:
         else:
             return ("Wrong")
 
-    def move(self,direction=1):
+    def move(self,direction):
         empty_blocks = self.getAvailableEmptyBlocks(map, direction)
         if empty_blocks>0:
             dx = 0
@@ -40,15 +46,30 @@ class Vehicle:
         else:
             return ("Wrong")
 
-    def getAvailableEmptyBlocks(self,map,direction=1):
+    def getAvailableEmptyBlocks(self,map,direction):
+        # If the vehicle's orientation is "H",
+        # then check the blocks in the row where the vehicle is located
+        # and detect the number of empty blocks corresponding to the direction.
+
+        # For example: if you want to move a "H" vehicle to the right,
+        # select direction=1,
+        # and count the number of empty blocks to the right for the last coordinate (self.__positions[-1]) in the positions of the vehicle in this row.
+        # Therefore, input start_y is the y where the vehicle is located, and start_x + 1 is the first blocks to the right of the vehicle.
         if direction==1:
             start_x,start_y=self.__positions[-1]
             if self.orientation == "H":
                 empty_blocks = count_positive_consecutive_empty_in_row(map, start_y, start_x + 1)
+
             else:
                 empty_blocks = count_positive_consecutive_empty_in_row(map.T, start_x, start_y + 1)
+        #         Therefore, if we want to move the "V" car up or down,
+        #         then we need to count the number of empty blocks up or down in the column where the vehicle is located.
+        #         Therefore, we need to transpose the map first, and then calculate it according to the method function for calculating "H".
+
         else:
             start_x, start_y = self.position[0]
+            # But if the vehicle's driving direction is "-1", then we need to take the first coordinate of the car's Position,
+            # and then calculate the number of empty blocks forward or upward.
             if self.orientation == "H":
                 empty_blocks = count_negetive_consecutive_empty_in_row(map, start_y, start_x + 1)
             else:
@@ -57,6 +78,7 @@ class Vehicle:
         return empty_blocks
 
     def count_positive_consecutive_empty_in_row(map, row, start_col):
+        grid=map
         if row < 0 or row >= len(grid) or start_col < 0 or start_col >= len(grid[0]):
             return 0
         empty_count = 0
@@ -68,6 +90,7 @@ class Vehicle:
 
         return empty_count
     def count_negetive_consecutive_empty_in_row(map, row, start_col):
+        grid = map
         if row < 0 or row >= len(grid) or start_col < 0 or start_col >= len(grid[0]):
             return 0
         empty_count = 0
