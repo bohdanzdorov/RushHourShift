@@ -1,7 +1,7 @@
 from BoardPiece import BoardPiece
 from Side import Side
 from Vehicle import Vehicle
-from Direction import Orientation
+from Orientation import Orientation
 
 
 class SideBoardPieces(BoardPiece):
@@ -27,7 +27,7 @@ class SideBoardPieces(BoardPiece):
             # Checks vehicles only in horizontal position
             if vehicle.getOrientation() is Orientation.HORIZONTAL:
                 # Checks for LEFT Board Piece
-                if self.getSide() is Side.PLUS:
+                if self.__side is Side.PLUS:
                     # Checks whether x-coordinates of vehicle crosses the boarder of Board Pieces
                     if (vehicle.getLength() == 2 and
                             (-1 <= (vehicle.getPositions()[0][0] - self._width) <= 0) and
@@ -38,7 +38,7 @@ class SideBoardPieces(BoardPiece):
                         print("It's not impossible to shift LEFT Board, because vehicle is on the boarder.")
                         return False
                 # Checks for right Board Piece
-                if self.getSide() is Side.MINUS:
+                if self.__side is Side.MINUS:
                     if (vehicle.getLength() == 2 and
                             (-1 <= (vehicle.getPositions()[0][0] - self._width - 4) <= 0) and
                             (-1 <= (vehicle.getPositions()[1][0] - self._width - 4) <= 0)):
@@ -68,10 +68,10 @@ class SideBoardPieces(BoardPiece):
                     # If (the Board Side is LEFT(PLUS) and vehicle on it) OR (the Board Side is RIGHT(MINUS) and vehicle on it)
                     # Then change coordinates of vehicle
                     if (
-                            (self.getSide() == Side.PLUS and (
+                            (self.__side == Side.PLUS and (
                                     vehicle.getPositions()[0][0] >= 0 and vehicle.getPositions()[0][0] < 5))
-                            or (self.getSide() == Side.MINUS and (
-                            vehicle.getPositions()[0][0] >= 9 and vehicle.getPositions()[0][0] < 14))
+                            or (self.__side) == Side.MINUS and (
+                            (vehicle.getPositions()[0][0] >= 9 and vehicle.getPositions()[0][0] < 14))
                     ):
                         for coordinates in vehicle.getPositions():
                             coordinates[1] -= numberToShift
@@ -83,9 +83,9 @@ class SideBoardPieces(BoardPiece):
                 # Then change coordinates of vehicle
                 for vehicle in Vehicles:
                     if (
-                            (self.getSide() == Side.PLUS and (
+                            (self.__side == Side.PLUS and (
                                     vehicle.getPositions()[0][0] >= 0 and vehicle.getPositions()[0][0] < 5))
-                            or (self.getSide() == Side.MINUS and (
+                            or (self.__side == Side.MINUS and (
                             vehicle.getPositions()[0][0] >= 9 and vehicle.getPositions()[0][0] < 14))
                     ):
                         for coordinates in vehicle.getPositions():
