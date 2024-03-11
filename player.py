@@ -28,7 +28,7 @@ def playRandomCard(self, deck):
         
 
 def checkWin(self,player_position,players_wining_position):
-        game_go_on=true
+        game_go_on=True
         if(player_position == players_wining_position):
             print("Players win")
         else:
