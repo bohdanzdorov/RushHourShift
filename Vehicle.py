@@ -108,15 +108,15 @@ class Vehicle:
         print(empty_count)
         return empty_count
 
-map = [[' ', '_', ' ',' '],
-      [' ', '_', ' ',' '],
-      [' ', 'A','_','_'],
-      [' ', 'A',' ',' ']]
-
-#'_' = road, ' ' = void(carcannot move here), 'A' = car Id
-
-positions = [[1,2], [1,3]]  #(col,row)
-v = Vehicle('A', 2, Orientation.VERTICAL, positions)
-v.slide(-1,map)
-
-print(v.getPositions())
+# map = [[' ', '_', ' ',' '],
+#       [' ', '_', ' ',' '],
+#       [' ', 'A','_','_'],
+#       [' ', 'A',' ',' ']]
+#
+# #'_' = road, ' ' = void(carcannot move here), 'A' = car Id
+#
+# positions = [[1,2], [1,3]]  #(col,row)
+# v = Vehicle('A', 2, Orientation.VERTICAL, positions)
+# v.slide(-1,map)
+#
+# print(v.getPositions())
