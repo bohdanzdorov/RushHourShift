@@ -86,8 +86,9 @@ class Vehicle:
         if row < 0 or row >= len(grid) or start_col < 0 or start_col >= len(grid[0]):
             return 0
         empty_count = 0
+
         for col in range(start_col, len(grid[row])):
-            if grid[row][col] is None:
+            if grid[row][col] == '_':
                 empty_count += 1
             else:
                 break
@@ -99,22 +100,23 @@ class Vehicle:
             return 0
         empty_count = 0
         for col in range(start_col, -1, -1):
-            print(start_col)
-            if grid[row][col] is None:
+
+            if grid[row][col] == '_':
                 empty_count += 1
             else:
                 break
         print(empty_count)
         return empty_count
 
-map = [[' ', ' ', ' '],
-      ['_', 'A', 'A'],
-      [' ', ' ']]
+map = [[' ', '_', ' ',' '],
+      [' ', '_', ' ',' '],
+      [' ', 'A','_','_'],
+      [' ', 'A',' ',' ']]
 
 #'_' = road, ' ' = void(carcannot move here), 'A' = car Id
 
-positions = [[1,1], [2,1]]
-v = Vehicle('A', 2, Orientation.HORIZONTAL, positions)
-v.slide
+positions = [[1,2], [1,3]]  #(col,row)
+v = Vehicle('A', 2, Orientation.VERTICAL, positions)
+v.slide(-1,map)
 
 print(v.getPositions())
