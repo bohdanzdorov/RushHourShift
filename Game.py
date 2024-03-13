@@ -161,5 +161,5 @@ game = Game(map, vehicles, players, sidePieces, centralPiece)
 game.updateMap()
 game.printMap()
 
-print(game.checkVehicleMovability(vehicles[0]))
+
 
