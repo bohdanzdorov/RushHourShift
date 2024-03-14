@@ -31,8 +31,8 @@ class Game:
 
     def playerTurn(self):
         print(f"Player {self.__currentPlayer + 1}'s turn:")
-
-        if(self.__players[self.__currentPlayer].playRandomCard() == Card.MOVE):
+        selected_card = self.__players[self.__currentPlayer].playRandomCard()
+        if(selected_card == Card.MOVE):
             print("1. Move a vehicle")
             movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
             if not movable_vehicles:
@@ -54,7 +54,7 @@ class Game:
             else:
                 print("Invalid move. Try again.")
                 return 0
-        elif(self.__players[self.__currentPlayer].playRandomCard() == Card.SHIFT):
+        elif(selected_card == Card.SHIFT):
             print("2. Shift the board")
             shiftable_boards = self.getShiftableBoard()
             if not shiftable_boards:
@@ -70,24 +70,24 @@ class Game:
             selected_direction= int(input("enter 1 for up one block or 2 to down one block and 0 to pass the move:"))
 
             shift(selected_board,selected_direction)  #refactor this accordingly
-        elif(self.__players[self.__currentPlayer].playRandomCard() == Card.SLIDE):   
+        elif(selected_card == Card.SLIDE):   
             movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
             if not movable_vehicles:
                 print("No movable vehicles available.")
                 return
             selected_vehicle_to_slide= str(input(f"enter the vehicle you want to slide"))
             return
-        elif(self.__players[self.__currentPlayer].playRandomCard() == Card.MOVEANDSHIFT): 
+        elif(selected_card == Card.MOVEANDSHIFT): 
             movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
             if not movable_vehicles:
                 print("No movable vehicles available.")
                 return
 
             print("Movable vehicles:")
-            move_or_slide=int(input("Press 1 for shift and move same only and 2 for shift and move different"))
+            move_or_slide=int(input("Press 1 for shift and move same only and 2 for move and move different"))
             if(move_or_slide==1):
-                selected_vehicle= select_vehicle()
-                shift(selected_vehicle)
+                
+                move()
             elif(move_or_slide==2):
                 selected_first_vehicle=()
                 selected_second_vehicle=()
