@@ -37,42 +37,46 @@ class Game:
             movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
             if not movable_vehicles:
                 print("No movable vehicles available.")
-                return
+                return 0
 
-            print("Movable vehicles:")
-            #Just ask a user to write vehicle id that he wants to move
-            # for i, vehicle in enumerate(movable_vehicles):
-            #     print(f"{i + 1}. {vehicle.getVehicleChar()}")
-
-            # selected_vehicle_index = int(input("Select a vehicle to move (enter the corresponding number): ")) - 1
-            # selected_vehicle = movable_vehicles[selected_vehicle_index]
-
-            new_positions = self.__players[self.__currentPlayer].moveVehicle(selected_vehicle)
+            print(f"Movable vehicles:{movable_vehicles}")
+            selected_vehicle_index = int(input("Select a vehicle to move (enter the corresponding number): "))
+            move_command = int(input("Press one to move:"))
+            if(move_command==1):print("vehicle moved")
+            else:
+                print("vehicle move command wrong")
+                return 0
+        
+            
             if new_positions is not None:
                 selected_vehicle.setPositions(new_positions)
                 self.updateMap()
             else:
                 print("Invalid move. Try again.")
+                return 0
         elif(self.__players[self.__currentPlayer].playRandomCard() == Card.SHIFT):
             print("2. Shift the board")
             shiftable_boards = self.getShiftableBoard()
             if not shiftable_boards:
                 print("No shiftable boards available.")
-                return
+                return 0
 
             print("Shiftable boards:")
-            #Just ask a user for a side to shift
-            # for i, _ in enumerate(shiftable_boards):
-            #     print(f"{i + 1}. Shift board")
+            if len(shiftable_boards>1):
+                selected_board= int(input(f"enter 1 to shift {shiftable_boards[0]} and press 2 to shift {shiftable_boards[1]}:"))
+            else:
+                selected_board= int(input(f"enter 1 to shift {shiftable_boards}:"))
+            #we neeed to know how many time we ask user to prompt the same think to how much it wants to go up or down.
+            selected_direction= int(input("enter 1 for up one block or 2 to down one block and 0 to pass the move:"))
 
-            # selected_board_index = int(input("Select a board to shift (enter the corresponding number): ")) - 1
-            # selected_board = shiftable_boards[selected_board_index]
-
-            map = selected_board
-            self.updateMap()
+            shift(selected_board,selected_direction)  #refactor this accordingly
         elif(self.__players[self.__currentPlayer].playRandomCard() == Card.SLIDE):   
-            pass
-            #TODO: slide
+            movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
+            if not movable_vehicles:
+                print("No movable vehicles available.")
+                return
+            selected_vehicle_to_slide= str(input(f"enter the vehicle you want to slide"))
+            return
         elif(self.__players[self.__currentPlayer].playRandomCard() == Card.MOVEANDSHIFT): 
             movable_vehicles = self.getMovableVehicles(self.__players[self.__currentPlayer].getPlayerVehicle())
             if not movable_vehicles:
@@ -80,38 +84,23 @@ class Game:
                 return
 
             print("Movable vehicles:")
-            # for i, vehicle in enumerate(movable_vehicles):
-            #     print(f"{i + 1}. {vehicle.getVehicleChar()}")
-
-            # selected_vehicle_index = int(input("Select a vehicle to move (enter the corresponding number): ")) - 1
-            # selected_vehicle = movable_vehicles[selected_vehicle_index]
-
-            new_positions = self.__players[self.__currentPlayer].moveVehicle(selected_vehicle)
-            if new_positions is not None:
-                selected_vehicle.setPositions(new_positions)
+            move_or_slide=int(input("Press 1 for shift and move same only and 2 for shift and move different"))
+            if(move_or_slide==1):
+                selected_vehicle= select_vehicle()
+                shift(selected_vehicle)
+            elif(move_or_slide==2):
+                selected_first_vehicle=()
+                selected_second_vehicle=()
+                shift(selected_first_vehicle)
+                move(selected_second_vehicle)
             else:
-                print("Invalid move. Try again.")
+                print("invalid choice")
+                return 0
             
-            print("2. Shift the board")
-            shiftable_boards = self.getShiftableBoard()
-            if not shiftable_boards:
-                print("No shiftable boards available.")
-                return
-
-            # print("Shiftable boards:")
-            # for i, _ in enumerate(shiftable_boards):
-            #     print(f"{i + 1}. Shift board")
-
-            # selected_board_index = int(input("Select a board to shift (enter the corresponding number): ")) - 1
-            # selected_board = shiftable_boards[selected_board_index]
-
             map = selected_board
             self.updateMap()
             
 
         else:
             print("Invalid choice. Try again.")
-
-
-## WILL WORK ON TONIGHT - SORRY FOR THE DELAY
-
+            return 0

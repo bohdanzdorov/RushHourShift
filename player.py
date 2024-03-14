@@ -7,8 +7,13 @@ class Player:
         self.__startSide = startSide
         self.__card = card
         self.__players_wining_position=players_wining_position
-
-    #TODO: add getters
+        
+    def getStartSide(self):
+        return self.__startSide
+    def getPlayersWiningPos(self):
+        return self.__players_wining_position
+    def getPlayerVehicle(self):
+        return self.__playerVehicle
 
     def playRandomCard(self, deck):
         # Assume 'deck' is a list of available cards, and only contains one-move cards
