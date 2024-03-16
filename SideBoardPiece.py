@@ -25,8 +25,14 @@ class SideBoardPieces(BoardPiece):
                 (self.__side == Side.RIGHT and (vehicle.getPositions()[0][0] >= 9 and vehicle.getPositions()[0][0] < 14))
                 or ((self.__side) == Side.LEFT and (vehicle.getPositions()[0][0] >= 0 and vehicle.getPositions()[0][0] < 5))
         ):
-            for coordinates in vehicle.getPositions():
-                coordinates[1] += numberToShift
+            listPositions = list(vehicle.getPositions())
+            updatedPositions = []
+            for coordinates in listPositions:
+                updatedCoordinates = [coordinates[0], coordinates[1] + numberToShift]
+                updatedPositions.append(updatedCoordinates)
+            tuplePositions = tuple(map(tuple, updatedPositions))
+            vehicle.setPositions(tuplePositions)
+
 
 
     def isShiftable(self, numberToShift, directionToShift, Vehicles):

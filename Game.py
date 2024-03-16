@@ -20,7 +20,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
-        self.__deck = [Card.MOVE, Card.MOVE, Card.SHIFT, Card.SLIDE, Card.MOVEANDSHIFT]
+        self.__deck = [Card.SHIFT, Card.MOVE]
 
     def printMap(self):
         topBottomBounds = '-' * 46
@@ -163,10 +163,10 @@ class Game:
             if check_player_vehicle_movability:
                 print(f"- {self.__players[self.__currentPlayer].getPlayerVehicle().getId()}") 
             #Player selects vehicle and direction to move
-            selected_vehicle_id= str(input("Select a vehicle to move (enter the corresponding id): "))
+            selected_vehicle_id= str(input("Select a vehicle to move (enter the corresponding id): \n>"))
             print(f"You chose {selected_vehicle_id}\n")
 
-            move_direction = int(input("Select the movement direction:\n '1' - To move forward/down\n '-1' - To move backward/up"))
+            move_direction = int(input("Select the movement direction:\n '1' - To move right/down\n '-1' - To move left/up\n\n>"))
             #Go through all movable vehicles and find
             for e in range(len(self.__vehicles)):
                 if(selected_vehicle_id==self.__vehicles[e].getId()):
@@ -216,7 +216,7 @@ class Game:
             selected_vehicle_id= str(input("Select a vehicle to slide (enter the corresponding id): "))
             print(f"You chose {selected_vehicle_id}\n")
 
-            move_direction = int(input("Select the movement direction:\n '1' - To move forward/down\n '-1' - To move backward/up"))
+            move_direction = int(input("Select the movement direction:\n '1' - To move right/down\n '-1' - To move left/up\n\n>"))
             #Go through all movable vehicles and find
             for e in range(len(self.__vehicles)):
                 if(selected_vehicle_id==self.__vehicles[e].getId()):
@@ -238,7 +238,7 @@ class Game:
         elif(selected_card == Card.SLIDE):   
             self.makeSlide()
         elif(selected_card == Card.MOVEANDSHIFT): 
-            move_and_shift=int(input("Choice the first action:\n1. Shift first, then move \n2. Move first, then shift:"))
+            move_and_shift=int(input("Choice the first action:\n1. Shift first, then move \n2. Move first, then shift:\n\n>"))
             if(move_and_shift==1):
                 self.makeShift()
                 self.printMap()
