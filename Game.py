@@ -1,6 +1,7 @@
 import numpy as np
 
 from Player import Player
+from Card import Card
 
 from Orientation import Orientation
 from Vehicle import Vehicle
@@ -9,6 +10,8 @@ from SideBoardPiece import SideBoardPieces
 from BoardPiece import BoardPiece
 from Side import Side
 from ShiftTo import ShiftTo
+
+
 class Game:
     def __init__(self, map, vehicles, players, sidePieces, centralPiece):
         self.__currentPlayer = 0
@@ -17,6 +20,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
+        self.__deck = [Card.MOVE, Card.MOVE, Card.SHIFT, Card.SLIDE, Card.MOVEANDSHIFT]
 
     def printMap(self):
         topBottomBounds = '-' * 46
@@ -127,21 +131,157 @@ class Game:
             if(isBlockedLeft and isBlockedRight):
                 return False 
             return True  
+              
+    def getShiftableBoards(self):
+        #it return an array of shiftable boards
+        shiftable_boards=[]
+        for i in range(len(self.__sidePieces)):
+            if(self.__sidePieces[i].isShiftable(1, ShiftTo.UP, vehicles)==True):
+                shiftable_boards.append(self.__sidePieces[i])
+        return shiftable_boards
+    
+    def getMovableVehicles(self):
+        movable_vehicles = []
+        for i in range(len(self.__vehicles)):
+            if(self.checkVehicleMovability(self.__vehicles[i])==True):
+                movable_vehicles.append(self.__vehicles[i])
+        return movable_vehicles
+    
+    def makeMove(self):
+        movable_vehicles = self.getMovableVehicles()
         
-vehicles = [Vehicle('A', 2, Orientation.HORIZONTAL, [[0,5], [1,5]]), Vehicle('B', 2, Orientation.VERTICAL, [[2,5], [2,6]])]
+        check_player_vehicle_movability=self.checkVehicleMovability(self.__players[self.__currentPlayer].getPlayerVehicle())
+        if not movable_vehicles and not check_player_vehicle_movability:
+            print("No movable vehicles available.\nSorry, you need to skip your turn :(")
+            return 0
+        else:
+            #Print out all movable vehicles
+            i = 0
+            print("Movable vehicles:")
+            for i in range(len(movable_vehicles)):
+                    print(f"- {movable_vehicles[i].getId()}")
+            if check_player_vehicle_movability:
+                print(f"- {self.__players[self.__currentPlayer].getPlayerVehicle().getId()}") 
+            #Player selects vehicle and direction to move
+            selected_vehicle_id= str(input("Select a vehicle to move (enter the corresponding id): "))
+            print(f"You chose {selected_vehicle_id}\n")
 
+            move_direction = int(input("Select the movement direction:\n '1' - To move forward/down\n '-1' - To move backward/up"))
+            #Go through all movable vehicles and find
+            for e in range(len(self.__vehicles)):
+                if(selected_vehicle_id==self.__vehicles[e].getId()):
+                    self.__vehicles[e].move(move_direction,self.__map)
+            if(selected_vehicle_id == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                    self.__players[self.__currentPlayer].getPlayerVehicle().move(move_direction,self.__map)
+            #Update changes
+            self.updateMap()
+
+    def makeShift(self):
+        selected_board=0
+        shiftable_boards = self.getShiftableBoards()
+        if not shiftable_boards:
+            print("No shiftable boards available.\nSorry, you gonna skip this turn :(")
+            return 0
+        
+        if len(shiftable_boards)>1:
+            selected_board= int(input(f"Select board side to shift:\n 0. {shiftable_boards[0].getSide()}\n 1. {shiftable_boards[1].getSide()}\n\n>"))
+            selected_direction= int(input("\nSelect the direction to shift:\n Enter 1 for 'up'\n Enter -1 for 'down'\n\n>"))
+            if(selected_direction==1):
+                self.__sidePieces[selected_board].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()]) 
+            else:
+                self.__sidePieces[selected_board].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+        else:
+            selected_direction= int(input("Select the direction to shift:\n Enter 1 for 'up'\n Enter -1 for 'down'\n\n>"))
+            if(selected_direction==1):
+                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles)            
+            else:
+                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles) 
+        self.updateMap()
+    
+    def makeSlide(self):
+        movable_vehicles = self.getMovableVehicles()
+        
+        check_player_vehicle_movability=self.checkVehicleMovability(self.__players[self.__currentPlayer].getPlayerVehicle())
+        if not movable_vehicles and not check_player_vehicle_movability:
+            print("No movable vehicles available.\nSorry, you need to skip your turn :(")
+            return 0
+        else:
+            #Print out all movable vehicles
+            print("Movable vehicles: ")
+            for i in range(len(movable_vehicles)):
+                    print(f"- {movable_vehicles[i].getId()}")
+            if check_player_vehicle_movability:
+                print(f"- {self.__players[self.__currentPlayer].getPlayerVehicle().getId()}") 
+            #Player selects vehicle and direction to slide
+            selected_vehicle_id= str(input("Select a vehicle to slide (enter the corresponding id): "))
+            print(f"You chose {selected_vehicle_id}\n")
+
+            move_direction = int(input("Select the movement direction:\n '1' - To move forward/down\n '-1' - To move backward/up"))
+            #Go through all movable vehicles and find
+            for e in range(len(self.__vehicles)):
+                if(selected_vehicle_id==self.__vehicles[e].getId()):
+                    self.__vehicles[e].slide(move_direction,self.__map)
+            if(selected_vehicle_id == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                    self.__players[self.__currentPlayer].getPlayerVehicle().slide(move_direction,self.__map)
+            #Update changes
+            self.updateMap()
+
+    def makeTurn(self):
+        print(f"Player {self.__currentPlayer+1}'s turn:")
+        selected_card = self.__players[self.__currentPlayer].playRandomCard(self.__deck)
+
+        self.printMap()
+        if(selected_card == Card.MOVE):
+            self.makeMove()
+        elif(selected_card == Card.SHIFT):
+            self.makeShift()
+        elif(selected_card == Card.SLIDE):   
+            self.makeSlide()
+        elif(selected_card == Card.MOVEANDSHIFT): 
+            move_and_shift=int(input("Choice the first action:\n1. Shift first, then move \n2. Move first, then shift:"))
+            if(move_and_shift==1):
+                self.makeShift()
+                self.printMap()
+                self.makeMove()
+            elif(move_and_shift==2):
+                self.makeMove()
+                self.printMap()
+                self.makeShift()    
+            else:
+                print("invalid choice")
+                return 0
+        else:
+            print("Invalid choice. Try again.")
+            return 0
+        
+    def play(self):
+        gameMode = int(input("Please, choose a play mode : \n1.Player vs. Player\n2.Player vs. AI\n\n>"))
+        if(gameMode == 1):
+            while(self.__players[0].checkWin() == False and self.__players[1].checkWin() == False):
+                self.makeTurn()
+                self.printMap()
+                self.changePlayers()
+            self.changePlayers()
+            print(f"\n\nCongratulations!!!\nPlayer {self.__currentPlayer+1} won!!!")    
+
+        elif(gameMode == 2):
+                
+            print("In progress...")
+        else:
+            print("Incorrect option entered :(")
+            return False        
 map = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
-        ['_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_'],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
@@ -149,8 +289,10 @@ map = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
     ]
 
-player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[1,7], [2,7]]), None, None, None)
-player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[13,8], [12,8]]), None, None, None)
+vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[2,5], [2,6]])]
+
+player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,7], [1,7]]), Side.LEFT, None)
+player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
 
 players=[player1, player2]
 
@@ -161,5 +303,4 @@ game = Game(map, vehicles, players, sidePieces, centralPiece)
 game.updateMap()
 game.printMap()
 
-
-
+game.play()
