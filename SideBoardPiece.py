@@ -6,9 +6,6 @@ from ShiftTo import ShiftTo
 
 
 class SideBoardPieces(BoardPiece):
-    # margin - the number of shifted blocks
-    # +margin  - shift up
-    # -margin - shift down
     __margin = 0
 
     def __init__(self, height, width, side):

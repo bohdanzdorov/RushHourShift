@@ -1,5 +1,6 @@
 from enum import Enum
 
 class Side(Enum):
-    PLUS = 0
-    MINUS = 1
+    LEFT = 0
+    RIGHT = 1
+    CENTRAL = 3
