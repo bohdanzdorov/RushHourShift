@@ -13,14 +13,12 @@ class Vehicle:
 
     def setPositions(self, newPositions):
         self.__positions = newPositions
-    
     def getId(self):
         return self.__id
     def getPositions(self):
         return self.__positions
     def getOrientation(self):
         return self.__orientation
-
     def getLength(self):
         return self.__length
 
@@ -107,7 +105,6 @@ class Vehicle:
                 empty_count += 1
             else:
                 break
-        print(empty_count)
         return empty_count
 
 # map =[

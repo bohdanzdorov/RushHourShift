@@ -193,9 +193,9 @@ class Game:
         else:
             selected_direction= int(input("Select the direction to shift:\n Enter 1 for 'up'\n Enter -1 for 'down'\n\n>"))
             if(selected_direction==1):
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles)            
+                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
             else:
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles) 
+                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
         self.updateMap()
     
     def makeSlide(self):
@@ -289,14 +289,14 @@ map = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
     ]
 
-vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[2,5], [2,6]])]
+vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[3,6], [3,7]]), Vehicle('A', 2, Orientation.HORIZONTAL, [[1, 6], [2, 6]])]
 
 player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,7], [1,7]]), Side.LEFT, None)
 player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
 
 players=[player1, player2]
-
 sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
+
 centralPiece = BoardPiece(6, 4)
 
 game = Game(map, vehicles, players, sidePieces, centralPiece)

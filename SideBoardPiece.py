@@ -17,6 +17,8 @@ class SideBoardPieces(BoardPiece):
 
     def getMargin(self):
         return self.__margin
+    def setMargin(self, margin):
+        self.__margin = margin
 
     def changeVehiclePositionsOnBoard(self, vehicle, numberToShift):
         # If (the Board Side is LEFT and vehicle on it) OR (the Board Side is RIGHT and vehicle on it)
@@ -32,8 +34,6 @@ class SideBoardPieces(BoardPiece):
                 updatedPositions.append(updatedCoordinates)
             tuplePositions = tuple(map(tuple, updatedPositions))
             vehicle.setPositions(tuplePositions)
-
-
 
     def isShiftable(self, numberToShift, directionToShift, Vehicles):
         for vehicle in Vehicles:
