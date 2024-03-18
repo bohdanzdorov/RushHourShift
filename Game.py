@@ -1,9 +1,11 @@
 import numpy as np
 
+from Agent import Agent
 from Player import Player
 from Card import Card
 
 from Orientation import Orientation
+from State import State
 from Vehicle import Vehicle
 
 from SideBoardPiece import SideBoardPieces
@@ -20,7 +22,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
-        self.__deck = [Card.SHIFT, Card.MOVE, Card.MOVE, Card.SLIDE, Card.MOVEANDSHIFT]
+        self.__deck = [Card.SLIDE, Card.MOVE, Card.MOVE, Card.MOVE, Card.SHIFT, Card.SHIFT, Card.MOVEANDSHIFT]
 
     def printMap(self):
         topBottomBounds = '-' * 46
@@ -136,7 +138,7 @@ class Game:
         #it return an array of shiftable boards
         shiftable_boards=[]
         for i in range(len(self.__sidePieces)):
-            if(self.__sidePieces[i].isShiftable(1, ShiftTo.UP, vehicles)==True):
+            if(self.__sidePieces[i].isShiftable(1, ShiftTo.UP, self.__vehicles)==True):
                 shiftable_boards.append(self.__sidePieces[i])
         return shiftable_boards
     
@@ -193,9 +195,9 @@ class Game:
         else:
             selected_direction= int(input("Select the direction to shift:\n Enter 1 for 'up'\n Enter -1 for 'down'\n\n>"))
             if(selected_direction==1):
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles)            
+                self.__sidePieces[shiftable_boards[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
             else:
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles) 
+                self.__sidePieces[shiftable_boards[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
         self.updateMap()
     
     def makeSlide(self):
@@ -263,10 +265,84 @@ class Game:
                 self.changePlayers()
             self.changePlayers()
             print(f"\n\nCongratulations!!!\nPlayer {self.__currentPlayer+1} won!!!")    
-
         elif(gameMode == 2):
-                
-            print("In progress...")
+            agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
+            players[1] = agent
+            self.__currentPlayer = 1 # agent always goes first
+            
+            while(self.__players[0].checkWin() == False and self.__players[1].checkWin() == False):
+                if(self.__currentPlayer == 1):
+                    self.__players[1].playRandomCard(self.__deck)
+                    agentAction = self.__players[1].zeroDepth(State(self.__players[1].getPlayerVehicle(), self.__players[0].getPlayerVehicle(), self.__vehicles, self.__sidePieces))
+                    
+                    if(agentAction.getCardType() == Card.MOVE):
+                        print("Agent moves vehicle '", agentAction.getItem(), "' to ", "right/down " if agentAction.getDirection() == 1 else "left/up ")
+                        for e in range(len(self.__vehicles)):
+                            if( agentAction.getItem()==self.__vehicles[e].getId()):
+                                self.__vehicles[e].move(agentAction.getDirection(),self.__map)
+                        if(agentAction.getItem() == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                            self.__players[self.__currentPlayer].getPlayerVehicle().move(agentAction.getDirection(),self.__map)
+                    
+                    elif(agentAction.getCardType() == Card.SLIDE):
+                        slideDirection = 0
+                        if(agentAction.getDirection() > 0):
+                            slideDirection = 1
+                        elif(agentAction.getDirection() < 0):
+                            slideDirection = -1
+                        else:
+                            slideDirection = 0
+                        print("Agent slides vehicle '", agentAction.getItem(), "' to ", "right/down " if agentAction.getDirection() == 1 else "left/up ")
+                        for e in range(len(self.__vehicles)):
+                            if( agentAction.getItem()==self.__vehicles[e].getId()):
+                                self.__vehicles[e].slide(slideDirection,self.__map)
+                        if(agentAction.getItem() == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                            self.__players[self.__currentPlayer].getPlayerVehicle().slide(slideDirection,self.__map)
+
+                    elif(agentAction.getCardType() == Card.SHIFT):
+                        print("Agent shifts board piece '", agentAction.getItem(), " up " if agentAction.getDirection() == ShiftTo.UP else " down ")
+                        if(agentAction.getDirection()==ShiftTo.UP):
+                            self.__sidePieces[agentAction.getItem().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                        else:
+                            self.__sidePieces[agentAction.getItem().value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+
+                    elif(agentAction.getCardType() == Card.MOVEANDSHIFT):
+
+                        if(agentAction.getItem()[0] == Side.LEFT or agentAction.getItem()[0] == Side.RIGHT):
+                            print(f"Agents shifts the board {agentAction.getItem()[0]} {agentAction.getDirection()[0]}")
+                            if(agentAction.getDirection()[0]==ShiftTo.UP):
+                                self.__sidePieces[agentAction.getItem()[0].value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                            else:
+                                self.__sidePieces[agentAction.getItem()[0].value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                            self.updateMap()
+                            print(f"and then moves vehicle {agentAction.getItem()[1]} {"up/left" if agentAction.getDirection()[1] == -1 else " down/right"}")
+                            for e in range(len(self.__vehicles)):
+                                if( agentAction.getItem()[1]==self.__vehicles[e].getId()):
+                                    self.__vehicles[e].move(agentAction.getDirection()[1],self.__map)
+                            if(agentAction.getItem()[1] == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                                self.__players[self.__currentPlayer].getPlayerVehicle().move(agentAction.getDirection()[1],self.__map)
+                        else:
+                            print(f"Agent moves vehicle {agentAction.getItem()[0]} {"up/left" if agentAction.getDirection()[0] == -1 else " down/right"}")
+                            for e in range(len(self.__vehicles)):
+                                if( agentAction.getItem()[0]==self.__vehicles[e].getId()):
+                                    self.__vehicles[e].move(agentAction.getDirection()[0],self.__map)
+                            if(agentAction.getItem()[0] == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
+                                self.__players[self.__currentPlayer].getPlayerVehicle().move(agentAction.getDirection()[0],self.__map)
+                            self.updateMap()
+                            print(f"and then shifts the board {agentAction.getItem()[1]} {agentAction.getDirection()[1]}")
+                            if(agentAction.getDirection()[1]==ShiftTo.UP):
+                                self.__sidePieces[agentAction.getItem()[1].value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                            else:
+                                self.__sidePieces[agentAction.getItem()[1].value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                    self.updateMap()
+                    self.printMap()
+                else:
+                    self.makeTurn()
+                    self.printMap()
+                self.changePlayers()
+            if(self.__currentPlayer == 1):
+                print("Congratulations, YOU WON!!!")
+            else:
+                print("AI WON!!! Better luck next time, loser!!!")
         else:
             print("Incorrect option entered :(")
             return False        
@@ -289,17 +365,26 @@ map = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
     ]
 
-vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[2,5], [2,6]])]
+vehiclesSet6 = [ Vehicle('A', 2, Orientation.VERTICAL, [[4,7], [4,8]]), 
+                 Vehicle('B', 3, Orientation.VERTICAL, [[5, 7], [5, 8], [5,9]]),
+                 Vehicle('D', 2, Orientation.HORIZONTAL, [[5,6], [6,6]]),
+                 Vehicle('E', 3, Orientation.VERTICAL, [[6,7], [6,8], [6,9]]),
+                 Vehicle('F', 3, Orientation.VERTICAL, [[7,6], [7,7], [7, 8]]),
+                 Vehicle('G', 3, Orientation.VERTICAL, [[8,6], [8,7], [8, 8]]),
+                 Vehicle('H', 2, Orientation.HORIZONTAL, [[7,9], [8, 9]]),
+                 Vehicle('I', 2, Orientation.VERTICAL, [[9,7], [9,8]]),
 
+
+                ]
 player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,7], [1,7]]), Side.LEFT, None)
 player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
 
 players=[player1, player2]
-
 sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
+
 centralPiece = BoardPiece(6, 4)
 
-game = Game(map, vehicles, players, sidePieces, centralPiece)
+game = Game(map, vehiclesSet6, players, sidePieces, centralPiece)
 game.updateMap()
 game.printMap()
 
