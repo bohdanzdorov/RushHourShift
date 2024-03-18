@@ -272,6 +272,7 @@ class Game:
             
             while(self.__players[0].checkWin() == False and self.__players[1].checkWin() == False):
                 if(self.__currentPlayer == 1):
+                    print("Agent's turn")
                     self.__players[1].playRandomCard(self.__deck)
                     agentAction = self.__players[1].zeroDepth(State(self.__players[1].getPlayerVehicle(), self.__players[0].getPlayerVehicle(), self.__vehicles, self.__sidePieces))
                     
@@ -299,7 +300,7 @@ class Game:
                             self.__players[self.__currentPlayer].getPlayerVehicle().slide(slideDirection,self.__map)
 
                     elif(agentAction.getCardType() == Card.SHIFT):
-                        print("Agent shifts board piece '", agentAction.getItem(), " up " if agentAction.getDirection() == ShiftTo.UP else " down ")
+                        print("Agent shifts board piece ", agentAction.getItem(), " up " if agentAction.getDirection() == ShiftTo.UP else " down ")
                         if(agentAction.getDirection()==ShiftTo.UP):
                             self.__sidePieces[agentAction.getItem().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
                         else:
@@ -336,6 +337,7 @@ class Game:
                     self.updateMap()
                     self.printMap()
                 else:
+                    print("Player's turn")
                     self.makeTurn()
                     self.printMap()
                 self.changePlayers()
@@ -386,6 +388,6 @@ centralPiece = BoardPiece(6, 4)
 
 game = Game(map, vehiclesSet6, players, sidePieces, centralPiece)
 game.updateMap()
-game.printMap()
+print("Welcome to Rush Hour Shift!\n\n")
 
 game.play()
