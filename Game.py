@@ -269,7 +269,7 @@ class Game:
             agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
             players[1] = agent
             self.__currentPlayer = 1 # agent always goes first
-            
+            self.printMap()
             while(self.__players[0].checkWin() == False and self.__players[1].checkWin() == False):
                 if(self.__currentPlayer == 1):
                     print("Agent's turn")
