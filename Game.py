@@ -274,6 +274,7 @@ class Game:
                 if(self.__currentPlayer == 1):
                     print("Agent's turn")
                     self.__players[1].playRandomCard(self.__deck)
+                    print("Please, wait...")
                     agentAction = self.__players[1].zeroDepth(State(self.__players[1].getPlayerVehicle(), self.__players[0].getPlayerVehicle(), self.__vehicles, self.__sidePieces))
                     
                     if(agentAction.getCardType() == Card.MOVE):
