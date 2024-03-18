@@ -3,4 +3,6 @@ How to install:
 2. Extract .zip file to the desired location
 3. Write ' pip install numpy ' in your terminal to install numpy library that is used in the project
 
-How to run the program
+How to run the program:
+1. Navigate to the extracted formal using terminal
+2. Run ' python Game.py ' script
