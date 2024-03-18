@@ -22,7 +22,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
-        self.__deck = [Card.SLIDE]
+        self.__deck = [Card.SLIDE, Card.MOVE, Card.MOVE, Card.MOVE, Card.SHIFT, Card.SHIFT, Card.MOVEANDSHIFT]
 
     def printMap(self):
         topBottomBounds = '-' * 46
@@ -138,7 +138,7 @@ class Game:
         #it return an array of shiftable boards
         shiftable_boards=[]
         for i in range(len(self.__sidePieces)):
-            if(self.__sidePieces[i].isShiftable(1, ShiftTo.UP, vehicles)==True):
+            if(self.__sidePieces[i].isShiftable(1, ShiftTo.UP, self.__vehicles)==True):
                 shiftable_boards.append(self.__sidePieces[i])
         return shiftable_boards
     
@@ -266,7 +266,7 @@ class Game:
             self.changePlayers()
             print(f"\n\nCongratulations!!!\nPlayer {self.__currentPlayer+1} won!!!")    
         elif(gameMode == 2):
-            agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,10], [13,10]]), Side.RIGHT, None)
+            agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
             players[1] = agent
             self.__currentPlayer = 1 # agent always goes first
             
@@ -365,16 +365,26 @@ map = [
         [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
     ]
 
-vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[11,9], [11,10]]), Vehicle('A', 2, Orientation.HORIZONTAL, [[1, 6], [2, 6]]), Vehicle('C', 2, Orientation.VERTICAL, [[7,9], [7,10]])]
-player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,8], [1,8]]), Side.LEFT, None)
-player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,10], [13,10]]), Side.RIGHT, None)
+vehiclesSet6 = [ Vehicle('A', 2, Orientation.VERTICAL, [[4,7], [4,8]]), 
+                 Vehicle('B', 3, Orientation.VERTICAL, [[5, 7], [5, 8], [5,9]]),
+                 Vehicle('D', 2, Orientation.HORIZONTAL, [[5,6], [6,6]]),
+                 Vehicle('E', 3, Orientation.VERTICAL, [[6,7], [6,8], [6,9]]),
+                 Vehicle('F', 3, Orientation.VERTICAL, [[7,6], [7,7], [7, 8]]),
+                 Vehicle('G', 3, Orientation.VERTICAL, [[8,6], [8,7], [8, 8]]),
+                 Vehicle('H', 2, Orientation.HORIZONTAL, [[7,9], [8, 9]]),
+                 Vehicle('I', 2, Orientation.VERTICAL, [[9,7], [9,8]]),
+
+
+                ]
+player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,7], [1,7]]), Side.LEFT, None)
+player2 = Player(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
 
 players=[player1, player2]
 sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
 
 centralPiece = BoardPiece(6, 4)
 
-game = Game(map, vehicles, players, sidePieces, centralPiece)
+game = Game(map, vehiclesSet6, players, sidePieces, centralPiece)
 game.updateMap()
 game.printMap()
 

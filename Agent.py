@@ -18,11 +18,11 @@ class Agent:
         self.__agentVehicle = agentVehicle
         self.__startSide = startSide
         self.__card = card
-        self.__probabilityMove = 0.4
-        self.__probabilityShift = 0.2
-        self.__probabilitySlide = 0.2
-        self.__probabilityMoveAndShift = 0.2
-        self.__maxDepth = 2 
+        self.__probabilityMove = 0.43
+        self.__probabilityShift = 0.29
+        self.__probabilitySlide = 0.14
+        self.__probabilityMoveAndShift = 0.14
+        self.__maxDepth = 2
 
     def getPlayerVehicle(self):
         return self.__agentVehicle
@@ -498,21 +498,3 @@ class Agent:
             if(self.__agentVehicle.getPositions()[i][0] < 1):
                 return True
         return False
-        
-# player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,8], [1,8]]), Side.LEFT, None)
-# vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[11,8], [11,9]]), Vehicle('A', 2, Orientation.HORIZONTAL, [[1, 6], [2, 6]])]
-# sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
-
-# agentVehicle = Vehicle('2', 2, Orientation.HORIZONTAL, [[12,10], [13,10]])
-# agent = Agent(agentVehicle, Side.RIGHT, None)
-
-# currentState = State(agentVehicle, player1.getPlayerVehicle(), vehicles, sidePieces)
-# possibleActions = agent.getPossibleActions(currentState, 1)
-# bestAction = agent.zeroDepth(currentState, Card.SHIFT) 
-# print(bestAction.getDirection(), bestAction.getItem())
-
-# action = Action(Card.SLIDE, 1, 'B')
-# newState = agent.result(currentState, action)
-# print(newState.getVehicles()[0].getPositions())
-
-# print(newState.getVehicles()[0].getPositions(), newState.getVehicles()[1].getPositions())
