@@ -438,10 +438,10 @@ class Agent:
         opponentPositions = state.getOpponentVehicle().getPositions()
         vehicles = state.getVehicles()
         sideBoards = state.getSideBoards()
-        return self.progressFunction(curAgentPositions) - self.heuristicFunction(curAgentPositions, opponentPositions, vehicles, sideBoards)
+        return self.progressFunction(curAgentPositions) - self.penaltyFunction(curAgentPositions, opponentPositions, vehicles, sideBoards)
     def progressFunction(self, curAgentPositions):
         return self.__agentVehicle.getPositions()[0][0] - curAgentPositions[0][0]
-    def heuristicFunction(self, curAgentPositions, opponentPosition, vehicles, sideBoards):
+    def penaltyFunction(self, curAgentPositions, opponentPosition, vehicles, sideBoards):
         alignLine = 5
         penaltyPoints = 0
         if curAgentPositions[0][0] < 5 and curAgentPositions[1][0] < 5:

@@ -195,9 +195,9 @@ class Game:
         else:
             selected_direction= int(input("Select the direction to shift:\n Enter 1 for 'up'\n Enter -1 for 'down'\n\n>"))
             if(selected_direction==1):
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                self.__sidePieces[shiftable_boards[0].getSide().value].shift(1,ShiftTo.UP,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
             else:
-                self.__sidePieces[selected_board[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
+                self.__sidePieces[shiftable_boards[0].getSide().value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
         self.updateMap()
     
     def makeSlide(self):
