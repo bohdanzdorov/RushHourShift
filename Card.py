@@ -5,4 +5,3 @@ class Card(Enum):
     SLIDE = 1
     MOVEANDSHIFT = 2
     SHIFT = 3
-    SHIFTANDMOVE = 4

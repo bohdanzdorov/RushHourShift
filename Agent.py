@@ -1,4 +1,6 @@
 import copy
+import random
+import sys
 
 from Action import Action
 from Card import Card
@@ -16,49 +18,177 @@ class Agent:
         self.__agentVehicle = agentVehicle
         self.__startSide = startSide
         self.__card = card
-    def getAgentVehicle(self):
+        self.__probabilityMove = 0.4
+        self.__probabilityShift = 0.2
+        self.__probabilitySlide = 0.2
+        self.__probabilityMoveAndShift = 0.2
+        self.__maxDepth = 2 
+
+    def getPlayerVehicle(self):
         return self.__agentVehicle
 
-    def zeroDepth(self, card):
-        #max, but card is known
-        pass
-    def oneDepth(self):
-        pass
-    def twoDepth(self):
-        pass
-    def result(self, curState, action):
+    def zeroDepth(self, curState):
+        possibleActions = self.getPossibleActions(curState, 1)
+        bestActionValue = -sys.maxsize
+        bestAction = None
+        for possibleAction in possibleActions:
+            if(possibleAction.getCardType() == self.__card):
+                newState = self.result(curState, 1, possibleAction)
+                evaluationOfState = self.minLayer(newState, 1, 1)
+                if (evaluationOfState > bestActionValue):
+                    bestActionValue = evaluationOfState
+                    bestAction = possibleAction
+        return bestAction
+
+
+    def minLayer(self, curState, curPlayer, depth):
+        minMove = sys.maxsize
+        minSlide = sys.maxsize
+        minShift = sys.maxsize
+        minMoveAndShift = sys.maxsize
+
+        possibleActions = self.getPossibleActions(curState, curPlayer)
+        for possibleAction in possibleActions:
+            newState = self.result(curState, curPlayer, possibleAction)
+            evaluationOfState = self.maxLayer(newState, 1, depth+1)
+            if (possibleAction.getCardType() == Card.MOVE and evaluationOfState < minMove):
+                minMove = evaluationOfState
+            if (possibleAction.getCardType() == Card.SHIFT and evaluationOfState < minShift):
+                minShift = evaluationOfState
+            if (possibleAction.getCardType() == Card.SLIDE and evaluationOfState < minSlide):
+                minSlide = evaluationOfState
+            if (possibleAction.getCardType() == Card.MOVEANDSHIFT and evaluationOfState < minMoveAndShift):
+                minMoveAndShift = evaluationOfState
+        
+        return minMove*self.__probabilityMove + minShift*self.__probabilityShift + minSlide*self.__probabilitySlide + minMoveAndShift*self.__probabilityMoveAndShift
+        
+    def maxLayer(self, curState, curPlayer, depth):
+        possibleActions = self.getPossibleActions(curState, curPlayer)
+        maxMove = -sys.maxsize
+        maxSlide = -sys.maxsize
+        maxShift = -sys.maxsize
+        maxMoveAndShift = -sys.maxsize
+
+        if(depth < self.__maxDepth):
+            for possibleAction in possibleActions:
+                newState = self.result(curState, curPlayer, possibleAction)
+                evaluationOfState = self.minLayer(newState, 0, depth+1)
+                if (possibleAction.getCardType() == Card.MOVE and evaluationOfState > maxMove):
+                    maxMove = evaluationOfState
+                if (possibleAction.getCardType() == Card.SHIFT and evaluationOfState > maxShift):
+                    maxShift = evaluationOfState
+                if (possibleAction.getCardType() == Card.SLIDE and evaluationOfState > maxSlide):
+                    maxSlide = evaluationOfState
+                if (possibleAction.getCardType() == Card.MOVEANDSHIFT and evaluationOfState > maxMoveAndShift):
+                    maxMoveAndShift = evaluationOfState
+            
+            return round(maxMove*self.__probabilityMove + maxShift*self.__probabilityShift + maxSlide*self.__probabilitySlide + maxMoveAndShift*self.__probabilityMoveAndShift, 5)  
+        
+        else:
+            for possibleAction in possibleActions:
+                newState = self.result(curState, curPlayer, possibleAction)
+                evaluationOfState = self.evaluateState(newState)
+                if (possibleAction.getCardType() == Card.MOVE and evaluationOfState > maxMove):
+                    maxMove = evaluationOfState
+                if (possibleAction.getCardType() == Card.SHIFT and evaluationOfState > maxShift):
+                    maxShift = evaluationOfState
+                if (possibleAction.getCardType() == Card.SLIDE and evaluationOfState > maxSlide):
+                    maxSlide = evaluationOfState
+                if (possibleAction.getCardType() == Card.MOVEANDSHIFT and evaluationOfState > maxMoveAndShift):
+                    maxMoveAndShift = evaluationOfState
+            
+            return round(maxMove*self.__probabilityMove + maxShift*self.__probabilityShift + maxSlide*self.__probabilitySlide + maxMoveAndShift*self.__probabilityMoveAndShift, 5)  
+
+    def getPossibleActions(self, curState, curPlayer):
+        possibleActions = []
+        operatableVehicles = copy.deepcopy(curState.getVehicles())
+        operatableVehicles.append(curState.getCurAgentVehicle())
+        operatableVehicles.append(curState.getOpponentVehicle())
+        for vehicle in operatableVehicles:
+            if(curPlayer == 1 and vehicle.getId() != '1'):
+                movesForVehicle = self.isMovable(operatableVehicles, vehicle, curState.getSideBoards())
+                for moves in movesForVehicle:
+                    possibleActions.append(moves)
+                slidesForVehicle = self.isSlidable(operatableVehicles, vehicle, curState.getSideBoards())
+                for slides in slidesForVehicle:
+                    possibleActions.append(slides)
+            elif(curPlayer == 0 and vehicle.getId() != '2'):
+                movesForVehicle = self.isMovable(operatableVehicles, vehicle, curState.getSideBoards())
+                for moves in movesForVehicle:
+                    possibleActions.append(moves)
+                slidesForVehicle = self.isSlidable(operatableVehicles, vehicle, curState.getSideBoards())
+                for slides in slidesForVehicle:
+                    possibleActions.append(slides)
+        for board in curState.getSideBoards():
+            boardActions = self.isShiftable(operatableVehicles, board)
+            for boardAction in boardActions:
+                possibleActions.append(boardAction)
+        for action in possibleActions:
+            if(action.getCardType() == Card.MOVE):
+                newState = self.result(curState, curPlayer, action)  
+                newOperatableVehicles = copy.deepcopy(newState.getVehicles())
+                newOperatableVehicles.append(newState.getCurAgentVehicle())
+                newOperatableVehicles.append(newState.getOpponentVehicle())         
+                for board in newState.getSideBoards():
+                    boardActions = self.isShiftable(newOperatableVehicles, board)
+                    for boardAction in boardActions:
+                        possibleActions.append(Action(Card.MOVEANDSHIFT, [action.getDirection(), boardAction.getDirection()], [action.getItem(), boardAction.getItem()]))
+            if(action.getCardType() == Card.SHIFT):
+                newState = self.result(curState, curPlayer, action)
+                newOperatableVehicles = copy.deepcopy(newState.getVehicles())
+                newOperatableVehicles.append(newState.getCurAgentVehicle())
+                newOperatableVehicles.append(newState.getOpponentVehicle())
+                for vehicle in newOperatableVehicles:
+                    if(curPlayer == 1 and vehicle.getId() != '1'):
+                        vehicleActions = self.isMovable(newOperatableVehicles, vehicle, newState.getSideBoards())
+                        for vehicleAction in vehicleActions:
+                            possibleActions.append(Action(Card.MOVEANDSHIFT, [action.getDirection(), vehicleAction.getDirection()], [action.getItem(), vehicleAction.getItem()]))
+                    elif(curPlayer == 0 and vehicle.getId() != '2'):
+                        vehicleActions = self.isMovable(newOperatableVehicles, vehicle, newState.getSideBoards())
+                        for vehicleAction in vehicleActions:
+                            possibleActions.append(Action(Card.MOVEANDSHIFT, [action.getDirection(), vehicleAction.getDirection()], [action.getItem(), vehicleAction.getItem()]))
+        return possibleActions
+    def result(self, curState, curPlayer, action):
         newState = copy.deepcopy(curState)
         if action.getCardType() == Card.SHIFT:
             if action.getItem() == Side.LEFT:
                 newState.getSideBoards()[0].shift(1, action.getDirection(), newState.getVehicles(), [newState.getCurAgentVehicle(), newState.getOpponentVehicle()])
             elif action.getItem() == Side.RIGHT:
                 newState.getSideBoards()[1].shift(1, action.getDirection(), newState.getVehicles(), [newState.getCurAgentVehicle(), newState.getOpponentVehicle()])
-        elif action.getCardType() == Card.MOVE:
+        elif action.getCardType() == Card.MOVE or action.getCardType() == Card.SLIDE:
             for i in range(len(newState.getVehicles())):
                 if action.getItem() == newState.getVehicles()[i].getId():
                     if newState.getVehicles()[i].getOrientation() == Orientation.VERTICAL:
                         newPositions = copy.deepcopy(newState.getVehicles()[i].getPositions())
-                        for j in range(len(newPositions)):
-                            newPositions[j][1] += action.getDirection()
-                        newState.getVehicles()[i].setPositions(newPositions)
+                        updatedPositions = []
+                        for coordinates in newPositions:
+                            newCoordinates = [coordinates[0], coordinates[1]+ action.getDirection()]
+                            updatedPositions.append(newCoordinates)
+                        newState.getVehicles()[i].setPositions(tuple(map(tuple, updatedPositions)))
+
+
                     elif newState.getVehicles()[i].getOrientation() == Orientation.HORIZONTAL:
                         newPositions = copy.deepcopy(newState.getVehicles()[i].getPositions())
-                        for j in range(len(newPositions)):
-                            newPositions[j][0] += action.getDirection()
-                        newState.getVehicles()[i].setPositions(newPositions)
-        elif action.getCardType() == Card.SLIDE:
-            for i in range(len(newState.getVehicles())):
-                if action.getItem() == newState.getVehicles()[i].getId():
-                    if newState.getVehicles()[i].getOrientation() == Orientation.VERTICAL:
-                        newPositions = copy.deepcopy(newState.getVehicles()[i].getPositions())
-                        for j in range(len(newPositions)):
-                            newPositions[j][1] += action.getDirection()
-                        newState.getVehicles()[i].setPositions(newPositions)
-                    elif newState.getVehicles()[i].getOrientation() == Orientation.HORIZONTAL:
-                        newPositions = copy.deepcopy(newState.getVehicles()[i].getPositions())
-                        for j in range(len(newPositions)):
-                            newPositions[j][0] += action.getDirection()
-                        newState.getVehicles()[i].setPositions(newPositions)
+                        updatedPositions = []
+                        for coordinates in newPositions:
+                            newCoordinates = [coordinates[0]+action.getDirection(), coordinates[1]]
+                            updatedPositions.append(newCoordinates)
+                        newState.getVehicles()[i].setPositions(tuple(map(tuple, updatedPositions)))
+            if(action.getItem() == '1' and curPlayer == 0):
+                newPositions = copy.deepcopy(newState.getOpponentVehicle().getPositions())
+                updatedPositions = []
+                for coordinates in newPositions:
+                    newCoordinates = [coordinates[0]+action.getDirection(), coordinates[1]]
+                    updatedPositions.append(newCoordinates)
+                newState.getOpponentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
+            if(action.getItem() == '2' and curPlayer == 1):
+                newPositions = copy.deepcopy(newState.getCurAgentVehicle().getPositions())
+                updatedPositions = []
+                for coordinates in newPositions:
+                    newCoordinates = [coordinates[0]+action.getDirection(), coordinates[1]]
+                    updatedPositions.append(newCoordinates)
+                newState.getCurAgentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
+       
         elif action.getCardType() == Card.MOVEANDSHIFT:
             if action.getItem()[0] == Side.LEFT or action.getItem()[0] == Side.RIGHT:
                 newState.getSideBoards()[action.getItem()[0].value].shift(1, action.getDirection()[0], newState.getVehicles(), [newState.getCurAgentVehicle(), newState.getOpponentVehicle()])
@@ -79,6 +209,22 @@ class Agent:
                                 newCoordinates = [coordinates[0]+ action.getDirection()[1], coordinates[1]]
                                 updatedPositions.append(newCoordinates)
                             newState2.getVehicles()[i].setPositions(tuple(map(tuple, updatedPositions)))
+
+                if(action.getItem()[1] == '1' and curPlayer == 0):
+                    newPositions = list(copy.deepcopy(newState2.getOpponentVehicle().getPositions()))
+                    updatedPositions = []
+                    for coordinates in newPositions:
+                        newCoordinates = [coordinates[0]+ action.getDirection()[1], coordinates[1]]
+                        updatedPositions.append(newCoordinates)
+                    newState2.getOpponentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
+
+                if(action.getItem()[1] == '2' and curPlayer == 1):
+                    newPositions = list(copy.deepcopy(newState2.getCurAgentVehicle().getPositions()))
+                    updatedPositions = []
+                    for coordinates in newPositions:
+                        newCoordinates = [coordinates[0]+ action.getDirection()[1], coordinates[1]]
+                        updatedPositions.append(newCoordinates)
+                    newState2.getCurAgentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
                 return newState2
             else:
                 for i in range(len(newState.getVehicles())):
@@ -97,6 +243,20 @@ class Agent:
                                 newCoordinates = [coordinates[0] + action.getDirection()[0], coordinates[1]]
                                 updatedPositions.append(newCoordinates)
                             newState.getVehicles()[i].setPositions(tuple(map(tuple, updatedPositions)))
+                if(action.getItem()[0] == '1' and curPlayer == 0):
+                    newPositions = list(copy.deepcopy(newState.getOpponentVehicle().getPositions()))
+                    updatedPositions = []
+                    for coordinates in newPositions:
+                        newCoordinates = [coordinates[0]+action.getDirection()[0], coordinates[1]]
+                        updatedPositions.append(newCoordinates)
+                    newState.getOpponentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
+                if(action.getItem()[0] == '2' and curPlayer == 1):
+                    newPositions = list(copy.deepcopy(newState.getCurAgentVehicle().getPositions()))
+                    updatedPositions = []
+                    for coordinates in newPositions:
+                        newCoordinates = [coordinates[0]+ action.getDirection()[0], coordinates[1]]
+                        updatedPositions.append(newCoordinates)
+                    newState.getCurAgentVehicle().setPositions(tuple(map(tuple, updatedPositions)))
                 newState2 = copy.deepcopy(newState)
                 newState2.getSideBoards()[action.getItem()[1].value].shift(1, action.getDirection()[1], newState2.getVehicles(), [newState2.getCurAgentVehicle(), newState2.getOpponentVehicle()])
                 return newState2
@@ -111,23 +271,27 @@ class Agent:
             buffVehicle = copy.deepcopy(checkVehicle)
             while self.containsAction(Action(Card.MOVE, -1, buffVehicle.getId()), self.isMovable(vehicles, buffVehicle, boards)):
                 leftCount += 1
-                newPositions = copy.deepcopy(buffVehicle.getPositions())
+                newPositions = list(copy.deepcopy(buffVehicle.getPositions()))
+                updatedPositions = []
                 for coordinates in newPositions:
-                    coordinates[0] -= 1
-                buffVehicle.setPositions(newPositions)
+                    newCoordinates = [coordinates[0] - 1, coordinates[1]]
+                    updatedPositions.append(newCoordinates)
+                buffVehicle.setPositions(tuple(map(tuple, updatedPositions)))
 
             buffVehicle = copy.deepcopy(checkVehicle)
             while self.containsAction(Action(Card.MOVE, 1, buffVehicle.getId()), self.isMovable(vehicles, buffVehicle, boards)):
                 rightCount += 1
-                newPositions = copy.deepcopy(buffVehicle.getPositions())
+                newPositions = list(copy.deepcopy(buffVehicle.getPositions()))
+                updatedPositions = []
                 for coordinates in newPositions:
-                    coordinates[0] += 1
-                buffVehicle.setPositions(newPositions)
+                    newCoordinates = [coordinates[0] + 1, coordinates[1]]
+                    updatedPositions.append(newCoordinates)
+                buffVehicle.setPositions(tuple(map(tuple, updatedPositions)))
 
             if(leftCount > 0):
-                slideActions.append(Action(Card.SLIDE, -1 * leftCount, checkVehicle))
+                slideActions.append(Action(Card.SLIDE, -1 * leftCount, checkVehicle.getId()))
             if (rightCount > 0):
-                slideActions.append(Action(Card.SLIDE, rightCount, checkVehicle))
+                slideActions.append(Action(Card.SLIDE, rightCount, checkVehicle.getId()))
         elif checkVehicle.getOrientation() == Orientation.VERTICAL:
             upCount = 0
             bottomCount = 0
@@ -135,24 +299,27 @@ class Agent:
 
             while self.containsAction(Action(Card.MOVE, -1, buffVehicle.getId()), self.isMovable(vehicles, buffVehicle, boards)):
                 upCount += 1
-                newPositions = copy.deepcopy(buffVehicle.getPositions())
+                newPositions = list(copy.deepcopy(buffVehicle.getPositions()))
+                updatedPositions = []
                 for coordinates in newPositions:
-                    coordinates[1] -= 1
-                buffVehicle.setPositions(newPositions)
+                    newCoordinates = [coordinates[0], coordinates[1]-1]
+                    updatedPositions.append(newCoordinates)
+                buffVehicle.setPositions(tuple(map(tuple, updatedPositions)))
 
-            print(checkVehicle.getPositions())
             buffVehicle = copy.deepcopy(checkVehicle)
             while self.containsAction(Action(Card.MOVE, 1, buffVehicle.getId()), self.isMovable(vehicles, buffVehicle, boards)):
                 bottomCount += 1
-                newPositions = copy.deepcopy(buffVehicle.getPositions())
+                newPositions = list(copy.deepcopy(buffVehicle.getPositions()))
+                updatedPositions = []
                 for coordinates in newPositions:
-                    coordinates[1] += 1
-                buffVehicle.setPositions(newPositions)
+                    newCoordinates = [coordinates[0], coordinates[1]+1]
+                    updatedPositions.append(newCoordinates)
+                buffVehicle.setPositions(tuple(map(tuple, updatedPositions)))
 
             if (upCount > 0):
-                slideActions.append(Action(Card.SLIDE, -1 * upCount, checkVehicle))
+                slideActions.append(Action(Card.SLIDE, -1 * upCount, checkVehicle.getId()))
             if (bottomCount > 0):
-                slideActions.append(Action(Card.SLIDE, bottomCount, checkVehicle))
+                slideActions.append(Action(Card.SLIDE, bottomCount, checkVehicle.getId()))
 
         return slideActions
     def containsAction(self, actionToCheck, actions):
@@ -271,7 +438,6 @@ class Agent:
         opponentPositions = state.getOpponentVehicle().getPositions()
         vehicles = state.getVehicles()
         sideBoards = state.getSideBoards()
-        print(self.heuristicFunction(curAgentPositions, opponentPositions, vehicles, sideBoards))
         return self.progressFunction(curAgentPositions) - self.heuristicFunction(curAgentPositions, opponentPositions, vehicles, sideBoards)
     def progressFunction(self, curAgentPositions):
         return self.__agentVehicle.getPositions()[0][0] - curAgentPositions[0][0]
@@ -301,7 +467,6 @@ class Agent:
             else:
                 penaltyPoints = self.givePenaltyForVehicles(vehicles, opponentPosition, curAgentPositions[0][1], 9, curAgentPositions[0][0])
                 penaltyPoints += self.givePenaltyForBoards(curAgentPositions[0][1], yStartOfCentralBoard, yEndOfCentralBoard)
-
         return penaltyPoints
     def givePenaltyForVehicles(self, vehicles, opponentPositions, yToCheck, startXToCheck, endXToCheck):
         penaltyPoints = 0
@@ -321,16 +486,33 @@ class Agent:
             penaltyPoints = (agentY - endBoardY)*2
         return penaltyPoints
 
-player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,8], [1,8]]), Side.LEFT, None)
-vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[3,5], [3,6]]), Vehicle('A', 2, Orientation.HORIZONTAL, [[1, 6], [2, 6]])]
-sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
+    def playRandomCard(self, deck):
+        # Assume 'deck' is a list of available cards, and only contains one-move cards
+        if deck:
+            self.__card = random.choice(deck) #deck should be a list of card
+            print(f"Agent picked card: {self.__card}")
+            return self.__card
+        
+    def checkWin(self):
+        for i in range(2):
+            if(self.__agentVehicle.getPositions()[i][0] < 1):
+                return True
+        return False
+        
+# player1 = Player(Vehicle('1', 2, Orientation.HORIZONTAL, [[0,8], [1,8]]), Side.LEFT, None)
+# vehicles = [ Vehicle('B', 2, Orientation.VERTICAL, [[11,8], [11,9]]), Vehicle('A', 2, Orientation.HORIZONTAL, [[1, 6], [2, 6]])]
+# sidePieces = [SideBoardPieces(6, 5, Side.LEFT), SideBoardPieces(6, 5, Side.RIGHT)]
 
-agentVehicle = Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]])
-agent = Agent(agentVehicle, Side.RIGHT, None)
+# agentVehicle = Vehicle('2', 2, Orientation.HORIZONTAL, [[12,10], [13,10]])
+# agent = Agent(agentVehicle, Side.RIGHT, None)
 
-currentState = State(agentVehicle, player1.getPlayerVehicle(), vehicles, sidePieces)
-action = Action(Card.SLIDE, 1, 'B')
-newState = agent.result(currentState, action)
-print(newState.getVehicles()[0].getPositions())
+# currentState = State(agentVehicle, player1.getPlayerVehicle(), vehicles, sidePieces)
+# possibleActions = agent.getPossibleActions(currentState, 1)
+# bestAction = agent.zeroDepth(currentState, Card.SHIFT) 
+# print(bestAction.getDirection(), bestAction.getItem())
+
+# action = Action(Card.SLIDE, 1, 'B')
+# newState = agent.result(currentState, action)
+# print(newState.getVehicles()[0].getPositions())
 
 # print(newState.getVehicles()[0].getPositions(), newState.getVehicles()[1].getPositions())
