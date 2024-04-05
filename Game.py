@@ -22,7 +22,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
-        self.__deck = [Card.SLIDE, Card.MOVE, Card.MOVE, Card.MOVE, Card.SHIFT, Card.SHIFT, Card.MOVEANDSHIFT]
+        self.__deck = [ Card.MOVEANDSHIFT]
 
     def printMap(self):
         topBottomBounds = '-' * 46
@@ -316,7 +316,7 @@ class Game:
                             else:
                                 self.__sidePieces[agentAction.getItem()[0].value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
                             self.updateMap()
-                            print("and then moves vehicle ", agentAction.getItem()[1])
+                            print("and then moves vehicle", agentAction.getItem()[1])
                             if(agentAction.getDirection()[1] == -1):
                                 print(" up/left")
                             else:
@@ -328,7 +328,7 @@ class Game:
                             if(agentAction.getItem()[1] == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
                                 self.__players[self.__currentPlayer].getPlayerVehicle().move(agentAction.getDirection()[1],self.__map)
                         else:
-                            print("Agent moves vehicle ", agentAction.getItem()[0])
+                            print("Agent moves vehicle", agentAction.getItem()[0])
                             if(agentAction.getDirection()[0] == -1):
                                 print(" up/left")
                             else:
