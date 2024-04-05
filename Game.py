@@ -266,6 +266,7 @@ class Game:
             self.changePlayers()
             print(f"\n\nCongratulations!!!\nPlayer {self.__currentPlayer+1} won!!!")    
         elif(gameMode == 2):
+<<<<<<< Updated upstream
             agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
             players[1] = agent
             self.__currentPlayer = 1 # agent always goes first
@@ -346,6 +347,9 @@ class Game:
                 print("Congratulations, YOU WON!!!")
             else:
                 print("AI WON!!! Better luck next time, loser!!!")
+=======
+            print("In progress...")
+>>>>>>> Stashed changes
         else:
             print("Incorrect option entered :(")
             return False        
