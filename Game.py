@@ -266,7 +266,6 @@ class Game:
             self.changePlayers()
             print(f"\n\nCongratulations!!!\nPlayer {self.__currentPlayer+1} won!!!")    
         elif(gameMode == 2):
-<<<<<<< Updated upstream
             agent = Agent(Vehicle('2', 2, Orientation.HORIZONTAL, [[12,8], [13,8]]), Side.RIGHT, None)
             players[1] = agent
             self.__currentPlayer = 1 # agent always goes first
@@ -317,14 +316,24 @@ class Game:
                             else:
                                 self.__sidePieces[agentAction.getItem()[0].value].shift(1,ShiftTo.DOWN,self.__vehicles, [self.__players[0].getPlayerVehicle(), self.__players[1].getPlayerVehicle()])
                             self.updateMap()
-                            print(f"and then moves vehicle {agentAction.getItem()[1]} {"up/left" if agentAction.getDirection()[1] == -1 else " down/right"}")
+                            print("and then moves vehicle ", agentAction.getItem()[1])
+                            if(agentAction.getDirection()[1] == -1):
+                                print(" up/left")
+                            else:
+                                print(" down/right")
+                            #print(f"and then moves vehicle {agentAction.getItem()[1]} {"up/left" if agentAction.getDirection()[1] == -1 else " down/right"}")
                             for e in range(len(self.__vehicles)):
                                 if( agentAction.getItem()[1]==self.__vehicles[e].getId()):
                                     self.__vehicles[e].move(agentAction.getDirection()[1],self.__map)
                             if(agentAction.getItem()[1] == self.__players[self.__currentPlayer].getPlayerVehicle().getId()):
                                 self.__players[self.__currentPlayer].getPlayerVehicle().move(agentAction.getDirection()[1],self.__map)
                         else:
-                            print(f"Agent moves vehicle {agentAction.getItem()[0]} {"up/left" if agentAction.getDirection()[0] == -1 else " down/right"}")
+                            print("Agent moves vehicle ", agentAction.getItem()[0])
+                            if(agentAction.getDirection()[0] == -1):
+                                print(" up/left")
+                            else:
+                                print(" down/right")
+                            #print(f"Agent moves vehicle {agentAction.getItem()[0]} {"up/left" if agentAction.getDirection()[0] == -1 else " down/right"}")
                             for e in range(len(self.__vehicles)):
                                 if( agentAction.getItem()[0]==self.__vehicles[e].getId()):
                                     self.__vehicles[e].move(agentAction.getDirection()[0],self.__map)
@@ -347,9 +356,7 @@ class Game:
                 print("Congratulations, YOU WON!!!")
             else:
                 print("AI WON!!! Better luck next time, loser!!!")
-=======
             print("In progress...")
->>>>>>> Stashed changes
         else:
             print("Incorrect option entered :(")
             return False        
