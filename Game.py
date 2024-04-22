@@ -22,7 +22,7 @@ class Game:
         self.__players = players
         self.__sidePieces = sidePieces
         self.__centralPiece = centralPiece
-        self.__deck = [ Card.MOVEANDSHIFT]
+        self.__deck = [ Card.MOVEANDSHIFT, Card.SLIDE, Card.SHIFT, Card.SHIFT, Card.MOVE, Card.MOVE, Card.MOVE ]
 
     def printMap(self):
         topBottomBounds = '-' * 46
